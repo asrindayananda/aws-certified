@@ -1,0 +1,68 @@
+Resources:
+
+  # Create Cloudformation for AWS RDS Database
+  RDSDatabase:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      AllocatedStorage: 20
+      DBInstanceClass: db.t2.micro
+      Engine: MySQL
+      EngineVersion: 5.7
+      MasterUsername: admin
+      MasterUserPassword: password
+      DBName: database
+      DBSubnetGroupName: !Ref DatabaseSubnetGroup
+      VPCSecurityGroups:
+        - !Ref DatabaseSecurityGroup
+      Tags:
+        - Key: Name
+          Value: database
+          
+  # Create NoSQL DynamoDB 
+  # Charged for throughput
+  # Serverless, AWS Managed
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      # Provision mode set config. On demand cost more
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      TableName: table
+
+  # Amazon Redshift
+  # Data warehouse
+  # Columnar storage
+  # Charged for storage and compute
+  # Serverless, AWS Managed
+  # For Business and Analytics
+  # Performance and Scalability 
+  # Parallel Processing
+  # Columnar Storage
+  # Result caching
+  RedshiftCluster:
+    Type: AWS::Redshift::Cluster
+    Properties:
+      ClusterType: single-node
+      NodeType: dc1.large
+      MasterUsername: admin
+      MasterUserPassword: password
+      DBName: database
+      ClusterSubnetGroupName: !Ref DatabaseSubnetGroup
+      VpcSecurityGroupIds:
+        - !Ref DatabaseSecurityGroup
+      Tags:
+        - Key: Name
+          Value: database
+      # Cloudwatch logging
+      LoggingProperties:
+        BucketName: !Ref CloudWatchLogsBucket
+        S3KeyPrefix: redshift
+      
+      
